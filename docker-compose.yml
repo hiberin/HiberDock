@@ -1,0 +1,35 @@
+version: '3'
+services:
+  nodejs:
+    build:
+      context: ./nodejs
+      args:
+        NODE_ENV: "development"
+    volumes:
+      - ./workspaces/nodejs/project:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm install && npm run dev
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./workspaces/php:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - php
+  php:
+    build: ./php
+    volumes:
+      - ./workspaces/php:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/conf.d/php.ini
+  postgres:
+    image: postgres:15.1-alpine3.17
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hibercollect
+    ports:
+      - "5432:5432"
